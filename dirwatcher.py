@@ -2,9 +2,21 @@
 import argparse
 import time
 import signal
+import logging
 
 
 __author__ = 'luisfff29'
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(stream_handler)
 
 exit_flag = False
 
@@ -30,7 +42,7 @@ def signal_handler(sig_num, frame):
     :return None
     """
     # log the associated signal name (the python3 way)
-    print('Received ' + signal.Signals(sig_num).name)
+    # print('Received ' + signal.Signals(sig_num).name)
     global exit_flag
     exit_flag = True
 
@@ -44,13 +56,11 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
     while not exit_flag:
         try:
-            print('Tick...')
-            time.sleep(1)
-            print('Tock...')
+            logger.info('Tick...')
             time.sleep(1)
         except KeyboardInterrupt:
-            print('Hey!!! DON\'T INTERRUPT MEEEE')
-    print('I have shut down gracefully')
+            logger.info('Hey!!! DON\'T INTERRUPT MEEEE')
+    logger.info('I have shut down gracefully')
 
 
 if __name__ == '__main__':
