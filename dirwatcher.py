@@ -3,18 +3,30 @@ import argparse
 import time
 import signal
 import logging
+import datetime
 
 
 __author__ = 'luisfff29'
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s.%(msecs)03d %(name)-12s %(levelname)-8s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S')
+logger.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+app_start_time = datetime.datetime.now()
+
+logger.info(
+    '\n'
+    '-------------------------------------------------------------------\n'
+    '     Running {}\n'
+    '     Started on {}\n'
+    '-------------------------------------------------------------------\n'
+    .format(__file__, app_start_time.isoformat())
+)
 
 stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
 
 logger.addHandler(stream_handler)
 
@@ -42,7 +54,7 @@ def signal_handler(sig_num, frame):
     :return None
     """
     # log the associated signal name (the python3 way)
-    # print('Received ' + signal.Signals(sig_num).name)
+    print('Received ' + signal.Signals(sig_num).name)
     global exit_flag
     exit_flag = True
 
@@ -56,7 +68,7 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
     while not exit_flag:
         try:
-            logger.info('Tick...')
+            logger.debug('Tick...')
             time.sleep(1)
         except KeyboardInterrupt:
             logger.info('Hey!!! DON\'T INTERRUPT MEEEE')
