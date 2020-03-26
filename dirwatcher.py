@@ -13,22 +13,10 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s.%(msecs)03d %(name)-12s %(levelname)-8s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 app_start_time = datetime.datetime.now()
 
-logger.info(
-    '\n'
-    '-------------------------------------------------------------------\n'
-    '     Running {}\n'
-    '     Started on {}\n'
-    '-------------------------------------------------------------------\n'
-    .format(__file__, app_start_time.isoformat())
-)
-
-stream_handler = logging.StreamHandler()
-
-logger.addHandler(stream_handler)
 
 exit_flag = False
 
@@ -45,6 +33,31 @@ def create_parser():
     return parser
 
 
+def start_banner():
+
+    logger.info(
+        '\n'
+        '-------------------------------------------------------------------\n'
+        '     Running {}\n'
+        '     Started on {}\n'
+        '-------------------------------------------------------------------\n'
+        .format(__file__, app_start_time.isoformat())
+    )
+
+
+def end_banner():
+    uptime = datetime.datetime.now() - app_start_time
+
+    logger.info(
+        '\n'
+        '-------------------------------------------------------------------\n'
+        '     Stopped {}\n'
+        '     Uptime was {}\n'
+        '-------------------------------------------------------------------\n'
+        .format(__file__, str(uptime))
+    )
+
+
 def signal_handler(sig_num, frame):
     """
     This is a handler for SIGTERM and SIGINT. Other signals can be mapped here as well (SIGHUP?)
@@ -54,7 +67,7 @@ def signal_handler(sig_num, frame):
     :return None
     """
     # log the associated signal name (the python3 way)
-    print('Received ' + signal.Signals(sig_num).name)
+    # print('Received ' + signal.Signals(sig_num).name)
     global exit_flag
     exit_flag = True
 
@@ -64,15 +77,18 @@ def main():
     # print(parser.parse_args())
 
     # Hook these two signals from the OS ..
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    # signal.signal(signal.SIGINT, signal_handler)
+    # signal.signal(signal.SIGTERM, signal_handler)
+    start_banner()
     while not exit_flag:
         try:
-            logger.debug('Tick...')
+            logger.info('Tick...')
             time.sleep(1)
         except KeyboardInterrupt:
-            logger.info('Hey!!! DON\'T INTERRUPT MEEEE')
-    logger.info('I have shut down gracefully')
+            logger.error('Hey!!! DON\'T INTERRUPT MEEEE')
+            break
+
+    end_banner()
 
 
 if __name__ == '__main__':
