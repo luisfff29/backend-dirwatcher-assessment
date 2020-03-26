@@ -4,18 +4,13 @@ import time
 import signal
 import logging
 import datetime
+import os
 
 
 __author__ = 'luisfff29'
 
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    format='%(asctime)s.%(msecs)03d %(name)-12s %(levelname)-8s %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S')
-logger.setLevel(logging.INFO)
-
-app_start_time = datetime.datetime.now()
 
 
 exit_flag = False
@@ -33,20 +28,30 @@ def create_parser():
     return parser
 
 
-def start_banner():
+def watch_directory():
+    print(os.getcwd())
+    while not exit_flag:
+        try:
+            logger.info('Tick...')
+            time.sleep(1)
+        except KeyboardInterrupt:
+            logger.error('Hey!!! DON\'T INTERRUPT MEEEE')
+            break
 
+
+def start_banner(t):
     logger.info(
         '\n'
         '-------------------------------------------------------------------\n'
         '     Running {}\n'
         '     Started on {}\n'
         '-------------------------------------------------------------------\n'
-        .format(__file__, app_start_time.isoformat())
+        .format(__file__, t.isoformat())
     )
 
 
-def end_banner():
-    uptime = datetime.datetime.now() - app_start_time
+def end_banner(t):
+    uptime = datetime.datetime.now() - t
 
     logger.info(
         '\n'
@@ -73,22 +78,23 @@ def signal_handler(sig_num, frame):
 
 
 def main():
-    # parser = create_parser()
-    # print(parser.parse_args())
 
     # Hook these two signals from the OS ..
     # signal.signal(signal.SIGINT, signal_handler)
     # signal.signal(signal.SIGTERM, signal_handler)
-    start_banner()
-    while not exit_flag:
-        try:
-            logger.info('Tick...')
-            time.sleep(1)
-        except KeyboardInterrupt:
-            logger.error('Hey!!! DON\'T INTERRUPT MEEEE')
-            break
+    logging.basicConfig(
+        format='%(asctime)s.%(msecs)03d %(name)-12s %(levelname)-8s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S')
 
-    end_banner()
+    logger.setLevel(logging.INFO)
+    app_start_time = datetime.datetime.now()
+
+    # parser = create_parser()
+    # args = parser.parse_args()
+    start_banner(app_start_time)
+    watch_directory()
+
+    end_banner(app_start_time)
 
 
 if __name__ == '__main__':
