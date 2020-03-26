@@ -28,15 +28,17 @@ def create_parser():
     return parser
 
 
-def watch_directory():
-    print(os.getcwd())
-    while not exit_flag:
-        try:
-            logger.info('Tick...')
-            time.sleep(1)
-        except KeyboardInterrupt:
-            logger.error('Hey!!! DON\'T INTERRUPT MEEEE')
-            break
+def watch_directory(path, magic):
+    watch_directory = {x for x in os.listdir(path)}
+
+    # while not exit_flag:
+
+    for filename in watch_directory:
+        with open(os.path.join(path, filename)) as f:
+            find_magic = f.readlines()
+        for magics in find_magic:
+            if magic in magics:
+                logger.error('I found it!!')
 
 
 def start_banner(t):
@@ -89,10 +91,11 @@ def main():
     logger.setLevel(logging.INFO)
     app_start_time = datetime.datetime.now()
 
-    # parser = create_parser()
-    # args = parser.parse_args()
+    parser = create_parser()
+    args = parser.parse_args()
+
     start_banner(app_start_time)
-    watch_directory()
+    watch_directory(args.path, args.magic)
 
     end_banner(app_start_time)
 
