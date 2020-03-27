@@ -28,17 +28,18 @@ def create_parser():
     return parser
 
 
-def watch_directory(path, magic):
-    watch_directory = {x for x in os.listdir(path)}
+def watch_directory(path, interval=1):
+    while not exit_flag:
+        try:
+            watch_directory = {x for x in os.listdir(path)}
 
-    # while not exit_flag:
-
-    for filename in watch_directory:
-        with open(os.path.join(path, filename)) as f:
-            find_magic = f.readlines()
-        for magics in find_magic:
-            if magic in magics:
-                logger.error('I found it!!')
+            for filename in watch_directory:
+                with open(os.path.join(path, filename)) as f:
+                    lines = f.readlines()
+        except FileNotFoundError:
+            logger.error('Directory or file not found: {}'.format(
+                os.path.abspath(path)))
+            time.sleep(interval)
 
 
 def start_banner(t):
@@ -95,7 +96,7 @@ def main():
     args = parser.parse_args()
 
     start_banner(app_start_time)
-    watch_directory(args.path, args.magic)
+    watch_directory(args.path, float(args.interval))
 
     end_banner(app_start_time)
 
