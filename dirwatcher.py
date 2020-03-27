@@ -28,18 +28,32 @@ def create_parser():
     return parser
 
 
-def watch_directory(path, interval=1):
-    while not exit_flag:
+def watch_directory(ext, interval, path, magic):
+    dict_ = {}
+    copy_dict = {}
+    while True:
         try:
-            watch_directory = {x for x in os.listdir(path)}
-
-            for filename in watch_directory:
-                with open(os.path.join(path, filename)) as f:
-                    lines = f.readlines()
+            dict_ = {x for x in os.listdir(path) if x.endswith(ext)}
+            for filename in dict_:
+                detect_added_files(filename, copy_dict)
+                copy_dict = dict_
         except FileNotFoundError:
             logger.error('Directory or file not found: {}'.format(
                 os.path.abspath(path)))
             time.sleep(interval)
+
+
+def scan_single_file(filename, magic):
+    with open(filename) as f:
+        lines = f.readlines()
+    for line in lines[::-1]:
+        if magic in line:
+            return (lines.index(line) + 1, line)
+
+
+def detect_added_files(f, c_d):
+    if f not in c_d:
+        logger.info('File added: ' + f)
 
 
 def start_banner(t):
@@ -96,7 +110,8 @@ def main():
     args = parser.parse_args()
 
     start_banner(app_start_time)
-    watch_directory(args.path, float(args.interval))
+
+    watch_directory(args.ext, float(args.interval), args.path, args.magic)
 
     end_banner(app_start_time)
 
