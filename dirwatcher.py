@@ -34,9 +34,7 @@ def watch_directory(ext, interval, path, magic):
     while True:
         try:
             dict_ = {x for x in os.listdir(path) if x.endswith(ext)}
-            for filename in dict_:
-                detect_added_files(filename, copy_dict)
-                copy_dict = dict_
+            copy_dict = detect_added_files(dict_, copy_dict)
         except FileNotFoundError:
             logger.error('Directory or file not found: {}'.format(
                 os.path.abspath(path)))
@@ -51,9 +49,12 @@ def scan_single_file(filename, magic):
             return (lines.index(line) + 1, line)
 
 
-def detect_added_files(f, c_d):
-    if f not in c_d:
-        logger.info('File added: ' + f)
+def detect_added_files(d, c_d):
+    for filename in d:
+        if filename not in c_d:
+            logger.info('File added: ' + filename)
+
+    return d
 
 
 def start_banner(t):
@@ -110,8 +111,8 @@ def main():
     args = parser.parse_args()
 
     start_banner(app_start_time)
-
-    watch_directory(args.ext, float(args.interval), args.path, args.magic)
+    while True:
+        watch_directory(args.ext, float(args.interval), args.path, args.magic)
 
     end_banner(app_start_time)
 
