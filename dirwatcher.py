@@ -29,16 +29,21 @@ def create_parser():
 
 
 def watch_directory(ext, interval, path, magic):
-    dict_ = {}
     copy_dict = {}
     while True:
         try:
             dict_ = {x for x in os.listdir(path) if x.endswith(ext)}
-            copy_dict = detect_added_files(dict_, copy_dict)
         except FileNotFoundError:
             logger.error('Directory or file not found: {}'.format(
                 os.path.abspath(path)))
             time.sleep(interval)
+        else:
+            if len(dict_) > len(copy_dict):
+                copy_dict = detect_added_files(dict_, copy_dict)
+            elif len(dict_) < len(copy_dict):
+                copy_dict = detect_removed_files(dict_, copy_dict)
+            else:
+                pass
 
 
 def scan_single_file(filename, magic):
@@ -53,6 +58,14 @@ def detect_added_files(d, c_d):
     for filename in d:
         if filename not in c_d:
             logger.info('File added: ' + filename)
+
+    return d
+
+
+def detect_removed_files(d, c_d):
+    for filename in c_d:
+        if filename not in d:
+            logger.info('File removed: ' + filename)
 
     return d
 
@@ -111,8 +124,8 @@ def main():
     args = parser.parse_args()
 
     start_banner(app_start_time)
-    while True:
-        watch_directory(args.ext, float(args.interval), args.path, args.magic)
+
+    watch_directory(args.ext, float(args.interval), args.path, args.magic)
 
     end_banner(app_start_time)
 
