@@ -30,44 +30,51 @@ def create_parser():
 
 def watch_directory(ext, interval, path, magic):
     copy_dict = {}
+
     while True:
         try:
-            dict_ = {x for x in os.listdir(path) if x.endswith(ext)}
+            dict_ = {x: scan_single_file(path, x, magic)
+                     for x in os.listdir(path) if x.endswith(ext)}
         except FileNotFoundError:
             logger.error('Directory or file not found: {}'.format(
                 os.path.abspath(path)))
             time.sleep(interval)
         else:
-            if len(dict_) > len(copy_dict):
-                copy_dict = detect_added_files(dict_, copy_dict)
-            elif len(dict_) < len(copy_dict):
-                copy_dict = detect_removed_files(dict_, copy_dict)
-            else:
-                pass
+            for filename in dict_:
+                detect_added_files(filename, dict_, copy_dict)
+                detect_magic_text(filename, dict_, copy_dict)
+
+            for filename in copy_dict:
+                detect_removed_files(filename, dict_)
+                copy_dict = dict_
 
 
-def scan_single_file(filename, magic):
-    with open(filename) as f:
-        lines = f.readlines()
+def scan_single_file(p, f, m):
+    with open(os.path.join(p, f)) as o:
+        lines = o.readlines()
     for line in lines[::-1]:
-        if magic in line:
-            return (lines.index(line) + 1, line)
+        if m in line:
+            return (len(lines) - lines[::-1].index(line), line)
+    else:
+        return None
 
 
-def detect_added_files(d, c_d):
-    for filename in d:
-        if filename not in c_d:
-            logger.info('File added: ' + filename)
-
-    return d
+def detect_added_files(f, d, c_d):
+    if f not in c_d:
+        logger.info('File added: ' + f)
+        c_d[f] = None
 
 
-def detect_removed_files(d, c_d):
-    for filename in c_d:
-        if filename not in d:
-            logger.info('File removed: ' + filename)
+def detect_removed_files(f, d):
+    if f not in d:
+        logger.info('File removed: ' + f)
 
-    return d
+
+def detect_magic_text(f, d, c_d):
+    if c_d[f] != d[f]:
+        logger.info('Magic text found: line {} of file {}'.format(
+            d[f][0], os.path.abspath(f)))
+        c_d[f] = d[f]
 
 
 def start_banner(t):
