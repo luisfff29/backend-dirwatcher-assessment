@@ -31,7 +31,7 @@ def create_parser():
 def watch_directory(ext, interval, path, magic):
     copy_dict = {}
 
-    while True:
+    while not exit_flag:
         try:
             dict_ = {x: scan_single_file(path, x, magic)
                      for x in os.listdir(path) if x.endswith(ext)}
@@ -110,7 +110,8 @@ def signal_handler(sig_num, frame):
     :return None
     """
     # log the associated signal name (the python3 way)
-    # print('Received ' + signal.Signals(sig_num).name)
+    logger.warning('Received OS process signal ' +
+                   signal.Signals(sig_num).name)
     global exit_flag
     exit_flag = True
 
@@ -118,8 +119,9 @@ def signal_handler(sig_num, frame):
 def main():
 
     # Hook these two signals from the OS ..
-    # signal.signal(signal.SIGINT, signal_handler)
-    # signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
     logging.basicConfig(
         format='%(asctime)s.%(msecs)03d %(name)-12s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S')
