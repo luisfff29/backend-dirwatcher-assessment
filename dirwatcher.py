@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import argparse
 import time
 import signal
@@ -21,10 +22,14 @@ def create_parser():
         description='Watches a directory of text files for a magic string')
     parser.add_argument('path', help='Directory path to watch')
     parser.add_argument('magic', help='String to watch for')
-    parser.add_argument('-e', '--ext', action='store',
-                        help='Text file extension to wach e.g. .txt, .log')
-    parser.add_argument('-i', '--interval', action='store',
-                        help='Number of seconds between polling')
+    parser.add_argument('-e', '--ext',
+                        action='store',
+                        help='Text file extension to wach e.g. .txt, .log',
+                        required=True)
+    parser.add_argument('-i', '--interval',
+                        action='store',
+                        help='Number of seconds between polling',
+                        required=True)
     return parser
 
 
@@ -103,8 +108,10 @@ def end_banner(t):
 
 def signal_handler(sig_num, frame):
     """
-    This is a handler for SIGTERM and SIGINT. Other signals can be mapped here as well (SIGHUP?)
-    Basically it just sets a global flag, and main() will exit it's loop if the signal is trapped.
+    This is a handler for SIGTERM and SIGINT. Other signals can be mapped
+    here as well (SIGHUP?)
+    Basically it just sets a global flag, and main() will exit it's loop
+    if the signal is trapped.
     :param sig_num: The integer signal number that was trapped from the OS.
     :param frame: Not used
     :return None
@@ -123,7 +130,8 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
 
     logging.basicConfig(
-        format='%(asctime)s.%(msecs)03d %(name)-12s %(levelname)-8s %(message)s',
+        format='%(asctime)s.%(msecs)03d %(name)'
+               '-12s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S')
 
     logger.setLevel(logging.INFO)
