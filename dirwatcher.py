@@ -58,7 +58,7 @@ def watch_directory(ext, interval, path, magic):
             # Loop through the dictionary
             for filename in dict_:
                 detect_added_files(filename, dict_, copy_dict)
-                detect_magic_text(filename, dict_, copy_dict)
+                detect_magic_text(path, filename, dict_, copy_dict)
 
             # Loop through the copy of the dictionary
             for filename in copy_dict:
@@ -95,12 +95,12 @@ def detect_removed_files(f, d):
         logger.info('File removed: ' + f)
 
 
-def detect_magic_text(f, d, c_d):
+def detect_magic_text(p, f, d, c_d):
     """Report magic text when the copy_dict doesn't have yet the value
     of the file"""
     if c_d[f] != d[f]:
         logger.info('Magic text found: line {} of file {}'.format(
-            d[f][0], os.path.abspath(f)))
+            d[f][0], os.path.abspath(os.path.join(p, f))))
         c_d[f] = d[f]
 
 
